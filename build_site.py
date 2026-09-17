@@ -95,7 +95,7 @@ body = f"""
 <a class="card" href="cost.html"><div class="k">03 · 建造成本</div><h3>巴拉圭總建造成本估算</h3><img src="assets/preview_cost.svg" alt="成本圖"><p>由 IFC 量得工程數量，套用 CYPE／costeo 巴拉圭單價；分棟明細、假設、風險與 ACELON 概算比較；Excel 可下載。</p></a>
 <a class="card" href="rfi.html"><div class="k">04 · RFI 與回覆</div><h3>31 項技術諮詢對照表</h3><img src="assets/plans/P0A30011_thumb.jpg" alt="RFI"><p>Salum &amp; Wenz 提問（ES／EN／中文）、台灣方 9/4 回覆、狀態與對造價的影響。</p></a>
 </div>
-<section><h2>下載</h2><p><a class="btn" href="assets/files/ACELON_巴拉圭建造成本估算_2026-09.xlsx">成本估算 Excel</a><a class="btn o" href="assets/files/acelon_site_concept.glb">3D 模型 GLB</a><a class="btn o" href="assets/files/acelon_site_concept.obj">3D 模型 OBJ</a><a class="btn o" href="assets/files/acelon_floorplans.js">平面向量資料 JS</a></p>
+<section><h2>下載</h2><p><a class="btn" href="assets/files/ACELON_Paraguay_cost_estimate_2026-09.xlsx">成本估算 Excel</a><a class="btn o" href="assets/files/acelon_site_concept.glb">3D 模型 GLB</a><a class="btn o" href="assets/files/acelon_site_concept.obj">3D 模型 OBJ</a><a class="btn o" href="assets/files/acelon_floorplans.js">平面向量資料 JS</a></p>
 <p class="small">GLB／OBJ 座標：公尺，X 向東、Z 向南，原點為第一次租賃範圍西北角；可直接匯入 Revit、Blender。</p></section>
 """
 page("index.html", "首頁", body)
@@ -106,7 +106,7 @@ SHEETS = [
  ("原絲廠房平面", [("P0A30021", "地下風道平面圖"), ("P0A30031", "一樓平面配置圖"), ("P0A30031A", "一樓平面配置圖（無設備）"), ("P0A30041", "一樓半平面配置圖"), ("P0A30041A", "一樓半平面配置圖（無設備）"), ("P0A30051", "二樓平面配置圖"), ("P0A30051A", "二樓平面配置圖（無設備）"), ("P0A30061", "三樓平面配置圖"), ("P0A30061A", "三樓平面配置圖（無設備）"), ("P0A30071", "四樓平面配置圖"), ("P0A30071A", "四樓平面配置圖（無設備）"), ("P0A30081", "屋頂平面配置圖")]),
  ("剖面", [("P0A30091", "斷面圖"), ("P0A30091A", "斷面圖（無設備）"), ("P0A30101", "A‑A 剖視圖"), ("P0A30111", "B‑B 剖視圖"), ("P0A30121", "C‑C 剖視圖"), ("P0A30131", "D‑D 剖視圖"), ("P0A30141", "E‑E 剖視圖"), ("P0A30141A", "E‑E 剖視圖（無設備）"), ("P0A30141B", "E‑E 剖視圖（無設備有風管）"), ("P0A30151", "F‑F 剖視圖")]),
  ("細部與基礎", [("P0A30160", "「G」detail 管道間管路及線槽配置（管材由業主自行處理）"), ("P0A30170", "廠房四周柱基礎、牆壁及底樑參考圖")]),
- ("園區管線系統（PTITP 提供）", [("園區供水系統", "園區供水系統"), ("園區汙水系統", "園區汙水系統"), ("園區雨水排放系統", "園區雨水排放系統")]),
+ ("園區管線系統（PTITP 提供）", [("park_water_supply", "園區供水系統"), ("park_sewage", "園區汙水系統"), ("park_stormwater", "園區雨水排放系統")]),
 ]
 gal = ""
 for grp, items in SHEETS:
@@ -248,7 +248,7 @@ src_html = "<ul class=small>" + "".join(srcli(r) for r in src if r[0]) + "</ul>"
 
 body = f"""<div class="hero"><h1>巴拉圭總建造成本估算</h1><p>AACE Class 3（±15–25%）。範圍：三棟廠房土建、外殼、裝修、建築機電（五大管線）、公用設備土建整合、基地工程；不含製程設備、製程管線與製程空調、土地租金。原絲廠房數量直接由 Salum &amp; Wenz IFC 實體量得，單價取自 CYPE 巴拉圭價格產生器（2024 基準 +10%）與 costeo.com.py 現價。</p>
 <div class="meta"><span>估算日 2026‑09‑16</span><span>匯率 ₲5,934.88/USD（BCP 2026‑09‑15）</span><span>GFA 15,340 m²</span></div>
-<p><a class="btn" href="assets/files/ACELON_巴拉圭建造成本估算_2026-09.xlsx">下載 Excel（458 個公式，改假設即重算）</a></p></div>
+<p><a class="btn" href="assets/files/ACELON_Paraguay_cost_estimate_2026-09.xlsx">下載 Excel（458 個公式，改假設即重算）</a></p></div>
 <div class="tiles">
 <div class="tile"><div class="v">USD {money(DIRECT[2])}</div><div class="l">直接成本小計 · USD {money(DIRECT[3])}/m²</div></div>
 <div class="tile"><div class="v">USD {money(PRE[2])}</div><div class="l">總建造成本（未稅）· USD {money(PRE[3])}/m²</div></div>
