@@ -97,7 +97,7 @@ input[type=range]{accent-color:var(--accent);width:180px}
     <div class="meta"><span>PTITP · Manzana XI</span><span>第一次租賃範圍 158 × 106 m</span><span id="t-basis">基準：P0A30011 / IFC 2026‑07‑31 / 回覆 2026‑09‑04</span></div>
   </div>
   <div style="display:flex;gap:8px;flex-wrap:wrap">
-    <div class="seg" role="group"><a href="index.html" style="display:inline-block;padding:9px 12px;font:600 13px 'Barlow Condensed','Noto Sans TC',sans-serif;letter-spacing:.05em;color:var(--ink2);text-decoration:none">← 首頁</a><a href="cost.html" style="display:inline-block;padding:9px 12px;font:600 13px 'Barlow Condensed','Noto Sans TC',sans-serif;letter-spacing:.05em;color:var(--ink2);text-decoration:none">建造成本</a></div>
+    <div class="seg" role="group"><a href="index.es.html" style="display:inline-block;padding:9px 12px;font:600 13px 'Barlow Condensed','Noto Sans TC',sans-serif;letter-spacing:.05em;color:var(--ink2);text-decoration:none">← Inicio</a><a href="cost.es.html" style="display:inline-block;padding:9px 12px;font:600 13px 'Barlow Condensed','Noto Sans TC',sans-serif;letter-spacing:.05em;color:var(--ink2);text-decoration:none">Costo de construcción</a></div>
     <div class="seg mobtabs" role="group" aria-label="panel"><button id="tab-list" aria-pressed="true">清單</button><button id="tab-info">資訊</button></div>
     <div class="seg" role="group" aria-label="language"><button data-lang="zh" aria-pressed="true">中文</button><button data-lang="es">ES</button><button data-lang="en">EN</button></div>
   </div>
@@ -5402,7 +5402,7 @@ addEventListener("resize", resize); resize();
 lines.add(rectLine(S.lot1[0],S.lot1[1],S.lot1[2],S.lot1[3],0.08,0xC8401C,false));
 lines.add(rectLine(S.lotAll[0],S.lotAll[1],S.lotAll[2],S.lotAll[3],0.08,0x8a8f96,true));
 window.__app = {get camera(){return camera}, get controls(){return controls}, setCut, goView};
-applyTheme(); goView("aerial"); setLang("zh"); setCut(26);
+applyTheme(); goView("aerial"); setLang("es"); setCut(26);
 (function loop(){ requestAnimationFrame(loop); controls.update(); renderer.render(scene, camera); labelRenderer.render(scene, camera); })();
 
 }catch(err){ const l=document.getElementById('loading'); if(l){ l.style.whiteSpace='pre-wrap'; l.style.padding='24px'; l.textContent='載入失敗 / Error: '+err.message; } console.error(err); }

@@ -1,8 +1,18 @@
 # -*- coding: utf-8 -*-
 """Static site generator for the ACELON Minga Guazú project site (GitHub Pages)."""
-import json, re, html, os
+import json, re, html, os, sys
 ROOT = os.path.dirname(os.path.abspath(__file__))
-def esc(s): return html.escape(str(s), quote=False)
+LANG = os.environ.get("SITE_LANG", "zh")
+ES = json.load(open(os.path.join(ROOT, "assets/i18n_es.json"), encoding="utf-8")) if LANG == "es" else {}
+sys.path.insert(0, ROOT)
+from i18n_ui import UI_ES
+UI_KEYS = sorted(UI_ES, key=len, reverse=True)
+def tr(s):
+    s = str(s)
+    if LANG != "es": return s
+    return ES.get(s.strip(), s)
+def esc(s): return html.escape(tr(s), quote=False)
+def lp(f): return f if LANG == "zh" else f.replace(".html", ".es.html")
 
 CSS = """
 :root{--paper:#F3F1EB;--panel:#FAF9F5;--line:#D6D2C8;--ink:#1C232B;--ink2:#5B6068;--mute:#8A8F96;--accent:#C8401C;--cyan:#1D7F9C;--chip:#ECE9E1;--tot:#D6D2C8;
@@ -54,14 +64,21 @@ NAV = [("index.html", "首頁"), ("model.html", "3D 模型"), ("plans.html", "�
 
 def page(fname, title, body, extra_head="", extra_js=""):
     CUR = ' aria-current="page"'
-    nav = "".join(f'<a class="l" href="{h}"{CUR if h == fname else ""}>{t}</a>' for h, t in NAV)
-    doc = f"""<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    nav = "".join(f'<a class="l" href="{lp(h)}"{CUR if h == fname else ""}>{t}</a>' for h, t in NAV)
+    other = fname.replace(".html", ".es.html") if LANG == "zh" else fname
+    sw = f'<span style="margin-left:auto;display:inline-flex;border:1px solid var(--line)"><a class="l" style="padding:4px 10px;border:0;{"background:var(--ink);color:var(--paper)" if LANG=="zh" else ""}" href="{fname if LANG=="zh" else other}">中文</a><a class="l" style="padding:4px 10px;border:0;{"background:var(--ink);color:var(--paper)" if LANG=="es" else ""}" href="{other if LANG=="zh" else fname}">ES</a></span>'
+    doc = f"""<!doctype html><html lang="{'zh-Hant' if LANG=='zh' else 'es'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{esc(title)} · ACELON Minga Guazú</title>{FONTS}<style>{CSS}</style>{extra_head}</head><body>
-<nav class="top"><div class="wrap"><a class="brand" href="index.html">ACELON · Minga Guazú</a>{nav}</div></nav>
+<nav class="top"><div class="wrap"><a class="brand" href="{lp('index.html')}">ACELON · Minga Guazú</a>{nav}{sw}</div></nav>
 <main class="wrap">{body}</main>
 <footer><div class="wrap">PTITP 台巴智慧科技園區 · 資料基準：Salum &amp; Wenz IFC 2026‑07‑31、台灣方圖說 P0A30011–170、9/4 回覆、CYPE／costeo 單價、BCP 匯率 2026‑09‑15 · 本站內容為概念設計與 Class 3 估算，非正式報價。</div></footer>
 {extra_js}</body></html>"""
-    open(os.path.join(ROOT, fname), "w", encoding="utf-8").write(doc)
+    if LANG == "es":
+        parts = re.split(r"(<!--nozh-->.*?<!--/nozh-->)", doc, flags=re.S)
+        for i in range(0, len(parts), 2):
+            for k in UI_KEYS: parts[i] = parts[i].replace(k, UI_ES[k])
+        doc = "".join(parts).replace("<!--nozh-->", "").replace("<!--/nozh-->", "")
+    open(os.path.join(ROOT, lp(fname)), "w", encoding="utf-8").write(doc)
 
 # ---------------- data ----------------
 COST = json.load(open(os.path.join(ROOT, "assets/cost_data.json"), encoding="utf-8"))
@@ -90,10 +107,10 @@ body = f"""
 <div class="tile"><div class="v">31 項</div><div class="l">Salum &amp; Wenz RFI · 12 項已由台灣方 9/4 回覆</div></div>
 </div>
 <div class="grid">
-<a class="card" href="model.html"><div class="k">01 · 3D 概念模型</div><h3>互動式廠區模型</h3><img src="assets/preview_3d.jpg" alt="3D 模型預覽"><p>IFC 結構、各層設備、向量平面線條與文字、假撚廠房機台與房間、公用區設備、基地設施；逐層剖切、三語切換。</p></a>
-<a class="card" href="plans.html"><div class="k">02 · 設計圖</div><h3>台灣方全套圖說 27 張＋園區管線 3 張</h3><img src="assets/plans/P0A30031_thumb.jpg" alt="平面圖預覽"><p>總平面、各層平面（含設備／無設備版）、屋頂、7 組剖面、管道間細部、圍牆基礎；可放大細看。</p></a>
-<a class="card" href="cost.html"><div class="k">03 · 建造成本</div><h3>巴拉圭總建造成本估算</h3><img src="assets/preview_cost.svg" alt="成本圖"><p>由 IFC 量得工程數量，套用 CYPE／costeo 巴拉圭單價；分棟明細、假設、風險與 ACELON 概算比較；Excel 可下載。</p></a>
-<a class="card" href="rfi.html"><div class="k">04 · RFI 與回覆</div><h3>31 項技術諮詢對照表</h3><img src="assets/plans/P0A30011_thumb.jpg" alt="RFI"><p>Salum &amp; Wenz 提問（ES／EN／中文）、台灣方 9/4 回覆、狀態與對造價的影響。</p></a>
+<a class="card" href="{lp('model.html')}"><div class="k">01 · 3D 概念模型</div><h3>互動式廠區模型</h3><img src="assets/preview_3d.jpg" alt="3D 模型預覽"><p>IFC 結構、各層設備、向量平面線條與文字、假撚廠房機台與房間、公用區設備、基地設施；逐層剖切、三語切換。</p></a>
+<a class="card" href="{lp('plans.html')}"><div class="k">02 · 設計圖</div><h3>台灣方全套圖說 27 張＋園區管線 3 張</h3><img src="assets/plans/P0A30031_thumb.jpg" alt="平面圖預覽"><p>總平面、各層平面（含設備／無設備版）、屋頂、7 組剖面、管道間細部、圍牆基礎；可放大細看。</p></a>
+<a class="card" href="{lp('cost.html')}"><div class="k">03 · 建造成本</div><h3>巴拉圭總建造成本估算</h3><img src="assets/preview_cost{"" if LANG=="zh" else ".es"}.svg" alt="成本圖"><p>由 IFC 量得工程數量，套用 CYPE／costeo 巴拉圭單價；分棟明細、假設、風險與 ACELON 概算比較；Excel 可下載。</p></a>
+<a class="card" href="{lp('rfi.html')}"><div class="k">04 · RFI 與回覆</div><h3>31 項技術諮詢對照表</h3><img src="assets/plans/P0A30011_thumb.jpg" alt="RFI"><p>Salum &amp; Wenz 提問（ES／EN／中文）、台灣方 9/4 回覆、狀態與對造價的影響。</p></a>
 </div>
 <section><h2>下載</h2><p><a class="btn" href="assets/files/ACELON_Paraguay_cost_estimate_2026-09.xlsx">成本估算 Excel</a><a class="btn o" href="assets/files/acelon_site_concept.glb">3D 模型 GLB</a><a class="btn o" href="assets/files/acelon_site_concept.obj">3D 模型 OBJ</a><a class="btn o" href="assets/files/acelon_floorplans.js">平面向量資料 JS</a></p>
 <p class="small">GLB／OBJ 座標：公尺，X 向東、Z 向南，原點為第一次租賃範圍西北角；可直接匯入 Revit、Blender。</p></section>
@@ -202,7 +219,10 @@ for i, (n, segs) in enumerate(stack):
 svg2 += "</svg>"
 leg = "<div class='leg'>" + "".join(f"<span><i style='background:{colors[j]}'></i>{esc(c)}</span>" for j, c in enumerate(cats)) + "</div>"
 # preview svg for index card
-open(os.path.join(ROOT, "assets/preview_cost.svg"), "w", encoding="utf-8").write(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {LH*len(bld)+30}" style="background:#FAF9F5;font:12px sans-serif">' + svg1.split(">", 1)[1].replace("var(--s1)", "#2a78d6").replace('class="v"', 'font-weight="600" fill="#1C232B"').replace("<text ", "<text fill=\"#5B6068\" "))
+_svg = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {LH*len(bld)+30}" style="background:#FAF9F5;font:12px sans-serif">' + svg1.split(">", 1)[1].replace("var(--s1)", "#2a78d6").replace('<text class="v"', '<text font-weight="600" fill="#1C232B"').replace("<text x=", "<text fill=\"#5B6068\" x=")
+if LANG == "es":
+    for k in UI_KEYS: _svg = _svg.replace(k, UI_ES[k])
+open(os.path.join(ROOT, "assets/preview_cost.svg" if LANG=="zh" else "assets/preview_cost.es.svg"), "w", encoding="utf-8").write(_svg)
 
 # assumptions table
 arows = [r for r in COST["假設與單價"][4:] if r[0] and r[0] not in ("代號",)]
@@ -300,7 +320,11 @@ for r in RFI:
     st, azh, aes = ANS.get(r["n"], ("open", "待決（尚未回覆）", "Abierta"))
     cnt[st] += 1
     lab = {"ok": "已回覆", "part": "部分回覆", "open": "待決"}[st]
-    rows += f"<tr><td class=mono>{r['n']}</td><td class=mono>{esc(r['cat'])}</td><td><b>{esc(zh)}</b><div class=small style='margin-top:4px'>{esc(es)}</div><div class=small>{esc(en)}</div></td><td class=small>{esc(str(r['ref']).split(chr(10))[0])}</td><td><span class='tag {st}'>{lab}</span><div style='margin-top:4px'>{esc(azh)}</div><div class=small>{esc(aes)}</div></td></tr>"
+    if LANG == "es": lab = UI_ES[lab]
+    q1, q2, q3 = (zh, es, en) if LANG == "zh" else (es, en, zh)
+    a1, a2 = (azh, aes) if LANG == "zh" else (aes, azh)
+    ref1 = str(r['ref']).split(chr(10))[0]
+    rows += f"<tr><td class=mono>{r['n']}</td><td class=mono>{esc(r['cat'])}</td><td><b>{esc(q1)}</b><div class=small style='margin-top:4px'>{esc(q2)}</div><div class=small>{esc(q3)}</div></td><td class=small>{esc(ref1)}</td><td><span class='tag {st}'>{lab}</span><div style='margin-top:4px'>{esc(a1)}</div><div class=small>{esc(a2)}</div></td></tr>"
 extra = [
  ("地下室風道", "因製程輸送空調冷風用，需採 RC 製造（非鐵板），且兩個風道需連通（P0A30021）。"),
  ("3F Q/A 放孔", "1000×1000 共 20 孔未繪出（P0A30091A、P0A30061 圓圈處）。"),
@@ -318,7 +342,7 @@ extra = [
 extra_html = "<div class='tw'><table><tr><th>主題</th><th>台灣方指示（2026‑09‑04）</th></tr>" + "".join(f"<tr><td><b>{esc(a)}</b></td><td>{esc(b)}</td></tr>" for a, b in extra) + "</table></div>"
 body = f"""<div class="hero"><h1>RFI 與回覆對照</h1><p>Salum &amp; Wenz（Arq. Jenny Curis González，2026‑09‑01）就 Revit 執行設計提出 31 項技術諮詢；台灣方於 2026‑09‑04 以「巴拉圭建築師問題點聯繫」回覆。下表逐項對照，並標出對造價有影響者（詳「建造成本」頁之未決事項）。</p>
 <div class="meta"><span>已回覆 {cnt['ok']}</span><span>部分回覆 {cnt['part']}</span><span>待決 {cnt['open']}</span></div></div>
-<section><h2>31 項 RFI</h2><div class="tw"><table><tr><th>No.</th><th>類別</th><th>問題（中文 · ES · EN）</th><th>參考</th><th>台灣方回覆 / 狀態</th></tr>{rows}</table></div>
+<section><h2>31 項 RFI</h2><div class="tw"><table><tr><th>No.</th><th>類別</th><th>問題（中文 · ES · EN）</th><th>參考</th><th>台灣方回覆 / 狀態</th></tr><!--nozh-->{rows}<!--/nozh--></table></div>
 <p class="small">類別：A 一般範圍／BIM · B 建築與材料 · C 結構與設備載重 · D 機電／MEP。</p></section>
 <section><h2>台灣方 9/4 補充指示（非 RFI 編號項）</h2>{extra_html}</section>
 """
@@ -328,5 +352,7 @@ page("rfi.html", "RFI 與回覆", body)
 src3d = open("/tmp/claude-0/-home-claude/9c48902a-dc41-5562-85e3-84f377bbeda1/scratchpad/acelon_3d.html", encoding="utf-8").read()
 navlink = '<div class="seg" role="group"><a href="index.html" style="display:inline-block;padding:9px 12px;font:600 13px \'Barlow Condensed\',\'Noto Sans TC\',sans-serif;letter-spacing:.05em;color:var(--ink2);text-decoration:none">← 首頁</a><a href="cost.html" style="display:inline-block;padding:9px 12px;font:600 13px \'Barlow Condensed\',\'Noto Sans TC\',sans-serif;letter-spacing:.05em;color:var(--ink2);text-decoration:none">建造成本</a></div>\n    '
 src3d = src3d.replace('<div class="seg mobtabs"', navlink + '<div class="seg mobtabs"', 1)
-open(os.path.join(ROOT, "model.html"), "w", encoding="utf-8").write('<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' + src3d.split("\n", 1)[0] + "</head><body>" + src3d.split("\n", 1)[1] + "</body></html>")
+if LANG == "es":
+    src3d = src3d.replace('setLang("zh")', 'setLang("es")').replace('href="index.html"', 'href="index.es.html"').replace('href="cost.html"', 'href="cost.es.html"').replace("← 首頁", "← Inicio").replace(">建造成本<", ">Costo de construcción<")
+open(os.path.join(ROOT, lp("model.html")), "w", encoding="utf-8").write('<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' + src3d.split("\n", 1)[0] + "</head><body>" + src3d.split("\n", 1)[1] + "</body></html>")
 print("built")
